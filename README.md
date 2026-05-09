@@ -1,3 +1,8 @@
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green)
+![Docker](https://img.shields.io/badge/Docker-ready-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 # LLM Hallucination Detector
 
 Claim-level hallucination detection pipeline using **LangChain + Bayesian inference**.
