@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  hallucination-detector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hallucination-detector
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - USE_MOCK=${USE_MOCK:-false}
+      - FLAG_THRESHOLD=${FLAG_THRESHOLD:-0.45}
+      - PORT=8000
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Run with mock mode for local testing without API keys
+  hallucination-detector-mock:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hallucination-detector-mock
+    ports:
+      - "8001:8000"
+    environment:
+      - USE_MOCK=true
+      - FLAG_THRESHOLD=0.45
+      - PORT=8000
+    profiles:
+      - mock
