@@ -6,7 +6,7 @@ independently, updating posterior probability of hallucination
 for each claim.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 import numpy as np
 

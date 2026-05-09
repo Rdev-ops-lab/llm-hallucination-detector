@@ -86,11 +86,11 @@ class ClaimExtractor:
         except json.JSONDecodeError:
             # Fallback: split by newlines if JSON parsing fails
             lines = [
-                line.strip().lstrip("-•1234567890. ")
+                line.strip().lstrip("-???1234567890. ")
                 for line in raw.split("\n")
                 if line.strip()
             ]
-            return [l for l in lines if len(l) > 10]
+            return [item for item in lines if len(item) > 10]
 
         return []
 

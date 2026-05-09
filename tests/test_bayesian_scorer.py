@@ -6,7 +6,6 @@ import pytest
 from src.bayesian_scorer import (
     BayesianHallucinationScorer,
     EvidenceSignal,
-    ClaimScore,
 )
 
 
