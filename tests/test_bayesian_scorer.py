@@ -70,13 +70,19 @@ class TestBayesianScorer:
 
     def test_response_level_scoring(self, scorer):
         claims_with_signals = [
-            ("The sky is blue.", [
-                EvidenceSignal("retrieval", support_score=0.95, weight=2.0),
-            ]),
-            ("Studies prove 100% cure rate.", [
-                EvidenceSignal("retrieval", support_score=0.02, weight=2.0),
-                EvidenceSignal("semantic", support_score=0.15, weight=1.0),
-            ]),
+            (
+                "The sky is blue.",
+                [
+                    EvidenceSignal("retrieval", support_score=0.95, weight=2.0),
+                ],
+            ),
+            (
+                "Studies prove 100% cure rate.",
+                [
+                    EvidenceSignal("retrieval", support_score=0.02, weight=2.0),
+                    EvidenceSignal("semantic", support_score=0.15, weight=1.0),
+                ],
+            ),
         ]
         result = scorer.score_response(claims_with_signals)
         assert result["response_flagged"] is True
@@ -90,19 +96,30 @@ class TestBayesianScorer:
         should still surface — not get diluted by averages.
         """
         claims_with_signals = [
-            (f"Correct claim {i}", [
-                EvidenceSignal("retrieval", support_score=0.92, weight=2.0),
-            ])
+            (
+                f"Correct claim {i}",
+                [
+                    EvidenceSignal("retrieval", support_score=0.92, weight=2.0),
+                ],
+            )
             for i in range(9)
         ]
         # Add one highly hallucinated claim
-        claims_with_signals.append(("Fabricated statistic.", [
-            EvidenceSignal("retrieval", support_score=0.01, weight=2.0),
-        ]))
+        claims_with_signals.append(
+            (
+                "Fabricated statistic.",
+                [
+                    EvidenceSignal("retrieval", support_score=0.01, weight=2.0),
+                ],
+            )
+        )
 
         result = scorer.score_response(claims_with_signals)
         assert result["response_flagged"] is True
-        assert result["max_hallucination_probability"] > result["mean_hallucination_probability"]
+        assert (
+            result["max_hallucination_probability"]
+            > result["mean_hallucination_probability"]
+        )
 
     def test_confidence_levels(self, scorer):
         low_evidence = [EvidenceSignal("sig", support_score=0.3, weight=0.5)]

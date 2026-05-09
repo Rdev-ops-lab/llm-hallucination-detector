@@ -22,6 +22,7 @@ from .bayesian_scorer import BayesianHallucinationScorer, EvidenceSignal
 @dataclass
 class DetectionResult:
     """Full hallucination detection result for a response."""
+
     response_text: str
     response_flagged: bool
     risk_level: str
@@ -90,9 +91,7 @@ class HallucinationDetector:
                 openai_api_key=os.getenv("OPENAI_API_KEY"),
             )
 
-        self.scorer = BayesianHallucinationScorer(
-            flag_threshold=flag_threshold
-        )
+        self.scorer = BayesianHallucinationScorer(flag_threshold=flag_threshold)
 
     def load_reference_documents(self, documents: List[str]) -> None:
         """
@@ -133,42 +132,48 @@ class HallucinationDetector:
             signals = []
 
             # Signal 1: Retrieval grounding
-            retrieval_score = self.grounder.ground_claim(
-                claim, reference_context
+            retrieval_score = self.grounder.ground_claim(claim, reference_context)
+            signals.append(
+                EvidenceSignal(
+                    name="retrieval_grounding",
+                    support_score=retrieval_score,
+                    weight=2.0,  # High weight — most reliable signal
+                    confidence=0.9,
+                )
             )
-            signals.append(EvidenceSignal(
-                name="retrieval_grounding",
-                support_score=retrieval_score,
-                weight=2.0,      # High weight — most reliable signal
-                confidence=0.9,
-            ))
 
             # Signal 2: Semantic similarity vs reference answer
             if reference_answer and not self.use_mock:
                 sem_score = self._semantic_similarity(claim, reference_answer)
-                signals.append(EvidenceSignal(
-                    name="semantic_similarity",
-                    support_score=sem_score,
-                    weight=1.0,
-                    confidence=0.7,  # Lower confidence — can hide fabrication
-                ))
+                signals.append(
+                    EvidenceSignal(
+                        name="semantic_similarity",
+                        support_score=sem_score,
+                        weight=1.0,
+                        confidence=0.7,  # Lower confidence — can hide fabrication
+                    )
+                )
             elif self.use_mock:
                 # Mock semantic signal for testing
-                signals.append(EvidenceSignal(
-                    name="semantic_similarity",
-                    support_score=0.75,
-                    weight=1.0,
-                    confidence=0.7,
-                ))
+                signals.append(
+                    EvidenceSignal(
+                        name="semantic_similarity",
+                        support_score=0.75,
+                        weight=1.0,
+                        confidence=0.7,
+                    )
+                )
 
             # Signal 3: Uncertainty marker detection (rule-based)
             uncertainty_score = self._check_uncertainty_markers(claim)
-            signals.append(EvidenceSignal(
-                name="uncertainty_markers",
-                support_score=uncertainty_score,
-                weight=0.5,
-                confidence=0.8,
-            ))
+            signals.append(
+                EvidenceSignal(
+                    name="uncertainty_markers",
+                    support_score=uncertainty_score,
+                    weight=0.5,
+                    confidence=0.8,
+                )
+            )
 
             claims_with_signals.append((claim, signals))
 
@@ -189,7 +194,7 @@ class HallucinationDetector:
                 "flag_threshold": self.flag_threshold,
                 "claims_extracted": len(claims),
                 "use_mock": self.use_mock,
-            }
+            },
         )
 
     def _semantic_similarity(self, claim: str, reference: str) -> float:
@@ -215,23 +220,37 @@ class HallucinationDetector:
 
         # Overconfidence markers — no hedging on potentially weak claims
         overconfidence_markers = [
-            "always", "never", "100%", "proven", "definitely",
-            "certainly", "it is a fact", "studies show", "research shows",
-            "scientists say", "experts agree",
+            "always",
+            "never",
+            "100%",
+            "proven",
+            "definitely",
+            "certainly",
+            "it is a fact",
+            "studies show",
+            "research shows",
+            "scientists say",
+            "experts agree",
         ]
 
         # Appropriate hedging markers
         hedging_markers = [
-            "may", "might", "could", "possibly", "approximately",
-            "around", "roughly", "according to", "suggests", "indicates",
+            "may",
+            "might",
+            "could",
+            "possibly",
+            "approximately",
+            "around",
+            "roughly",
+            "according to",
+            "suggests",
+            "indicates",
         ]
 
         overconfidence_count = sum(
             1 for m in overconfidence_markers if m in claim_lower
         )
-        hedging_count = sum(
-            1 for m in hedging_markers if m in claim_lower
-        )
+        hedging_count = sum(1 for m in hedging_markers if m in claim_lower)
 
         # Short neutral claims get neutral score
         if not overconfidence_count and not hedging_count:
@@ -259,5 +278,5 @@ class HallucinationDetector:
             mean_hallucination_probability=0.0,
             escalate_to_human=False,
             claim_scores=[],
-            metadata={"note": "No claims extracted from response."}
+            metadata={"note": "No claims extracted from response."},
         )

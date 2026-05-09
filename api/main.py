@@ -152,8 +152,7 @@ async def detect_hallucination(request: DetectionRequest):
     except Exception as e:
         logger.error(f"Detection failed: {e}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Detection pipeline error: {str(e)}"
+            status_code=500, detail=f"Detection pipeline error: {str(e)}"
         )
 
     processing_time_ms = (time.time() - start_time) * 1000
@@ -195,19 +194,25 @@ async def detect_batch(requests: List[DetectionRequest]):
                 reference_context=req.reference_context,
                 reference_answer=req.reference_answer,
             )
-            results.append({
-                "task_id": req.task_id,
-                "success": True,
-                "result": result.to_dict(),
-            })
+            results.append(
+                {
+                    "task_id": req.task_id,
+                    "success": True,
+                    "result": result.to_dict(),
+                }
+            )
         except Exception as e:
-            results.append({
-                "task_id": req.task_id,
-                "success": False,
-                "error": str(e),
-            })
+            results.append(
+                {
+                    "task_id": req.task_id,
+                    "success": False,
+                    "error": str(e),
+                }
+            )
 
-    flagged_count = sum(1 for r in results if r.get("success") and r["result"]["response_flagged"])
+    flagged_count = sum(
+        1 for r in results if r.get("success") and r["result"]["response_flagged"]
+    )
 
     return {
         "total": len(results),

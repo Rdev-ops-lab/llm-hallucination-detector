@@ -14,20 +14,22 @@ import numpy as np
 @dataclass
 class EvidenceSignal:
     """Single evidence signal for a claim."""
+
     name: str
-    support_score: float      # 0.0 = no support, 1.0 = full support
-    confidence: float = 1.0   # how much to trust this signal
-    weight: float = 1.0       # relative importance of this signal
+    support_score: float  # 0.0 = no support, 1.0 = full support
+    confidence: float = 1.0  # how much to trust this signal
+    weight: float = 1.0  # relative importance of this signal
 
 
 @dataclass
 class ClaimScore:
     """Bayesian scoring result for a single claim."""
+
     claim: str
     hallucination_probability: float
     signals: List[EvidenceSignal]
     flagged: bool
-    confidence_level: str     # HIGH / MEDIUM / LOW
+    confidence_level: str  # HIGH / MEDIUM / LOW
     explanation: str = ""
 
     def to_dict(self) -> dict:
@@ -41,10 +43,10 @@ class ClaimScore:
                 {
                     "name": s.name,
                     "support_score": round(s.support_score, 4),
-                    "weight": s.weight
+                    "weight": s.weight,
                 }
                 for s in self.signals
-            ]
+            ],
         }
 
 
@@ -77,11 +79,7 @@ class BayesianHallucinationScorer:
         self.prior_alpha = prior_alpha
         self.prior_beta = prior_beta
 
-    def score_claim(
-        self,
-        claim: str,
-        signals: List[EvidenceSignal]
-    ) -> ClaimScore:
+    def score_claim(self, claim: str, signals: List[EvidenceSignal]) -> ClaimScore:
         """
         Score a single claim given evidence signals.
 
@@ -133,10 +131,7 @@ class BayesianHallucinationScorer:
         )
 
     def _build_explanation(
-        self,
-        signals: List[EvidenceSignal],
-        prob: float,
-        flagged: bool
+        self, signals: List[EvidenceSignal], prob: float, flagged: bool
     ) -> str:
         if not signals:
             return "No evidence signals provided."
@@ -147,13 +142,11 @@ class BayesianHallucinationScorer:
         parts = []
         if flagged:
             parts.append(
-                f"Flagged as likely hallucination "
-                f"(probability: {prob:.1%})."
+                f"Flagged as likely hallucination " f"(probability: {prob:.1%})."
             )
         else:
             parts.append(
-                f"Claim appears grounded "
-                f"(hallucination probability: {prob:.1%})."
+                f"Claim appears grounded " f"(hallucination probability: {prob:.1%})."
             )
 
         if weak_signals:
@@ -166,10 +159,7 @@ class BayesianHallucinationScorer:
 
         return " ".join(parts)
 
-    def score_response(
-        self,
-        claims_with_signals: List[tuple]
-    ) -> dict:
+    def score_response(self, claims_with_signals: List[tuple]) -> dict:
         """
         Score all claims in a response.
 

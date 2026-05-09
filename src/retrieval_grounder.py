@@ -15,7 +15,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
-
 GROUNDING_PROMPT = """\
 You are a fact-checking assistant.
 
@@ -99,14 +98,9 @@ class RetrievalGrounder:
                 # No reference available — return neutral score
                 return 0.5
             retrieved = self.vectorstore.similarity_search(claim, k=top_k)
-            reference_context = "\n\n".join(
-                doc.page_content for doc in retrieved
-            )
+            reference_context = "\n\n".join(doc.page_content for doc in retrieved)
 
-        raw = self.chain.invoke({
-            "claim": claim,
-            "context": reference_context
-        })
+        raw = self.chain.invoke({"claim": claim, "context": reference_context})
 
         return self._parse_score(raw)
 
@@ -120,10 +114,7 @@ class RetrievalGrounder:
 
         Returns list of support scores, one per claim.
         """
-        return [
-            self.ground_claim(claim, reference_context)
-            for claim in claims
-        ]
+        return [self.ground_claim(claim, reference_context) for claim in claims]
 
     @staticmethod
     def _parse_score(raw: str) -> float:
@@ -135,6 +126,7 @@ class RetrievalGrounder:
         except ValueError:
             # Try to find a float in the text
             import re
+
             matches = re.findall(r"\d+\.?\d*", raw)
             if matches:
                 score = float(matches[0])
@@ -154,8 +146,12 @@ class MockRetrievalGrounder:
     def build_index(self, documents: List[str]) -> None:
         pass
 
-    def ground_claim(self, claim: str, reference_context: Optional[str] = None, top_k: int = 3) -> float:
+    def ground_claim(
+        self, claim: str, reference_context: Optional[str] = None, top_k: int = 3
+    ) -> float:
         return self.default_score
 
-    def ground_claims(self, claims: List[str], reference_context: Optional[str] = None) -> List[float]:
+    def ground_claims(
+        self, claims: List[str], reference_context: Optional[str] = None
+    ) -> List[float]:
         return [self.default_score for _ in claims]

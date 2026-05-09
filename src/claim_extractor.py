@@ -15,7 +15,6 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-
 CLAIM_EXTRACTION_PROMPT = """\
 You are an expert at decomposing text into atomic factual claims.
 
@@ -77,8 +76,7 @@ class ClaimExtractor:
         if raw.startswith("```"):
             lines = raw.split("\n")
             raw = "\n".join(
-                line for line in lines
-                if not line.startswith("```")
+                line for line in lines if not line.startswith("```")
             ).strip()
 
         try:
